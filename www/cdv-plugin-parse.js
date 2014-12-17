@@ -1,8 +1,8 @@
-var ParsePushPlugin = {
+var ParsePlugin = {
     register: function(regParams, successCallback, errorCallback) {
         cordova.exec(
             successCallback, errorCallback,
-            'ParsePushPlugin', 'register',
+            'ParsePlugin', 'register',
             [regParams]
         );
     },
@@ -10,7 +10,7 @@ var ParsePushPlugin = {
     getInstallationId: function(successCallback, errorCallback) {
         cordova.exec(
             successCallback, errorCallback,
-            'ParsePushPlugin', 'getInstallationId',
+            'ParsePlugin', 'getInstallationId',
             []
         );
     },
@@ -18,7 +18,7 @@ var ParsePushPlugin = {
     getInstallationObjectId: function(successCallback, errorCallback) {
         cordova.exec(
             successCallback, errorCallback,
-            'ParsePushPlugin', 'getInstallationObjectId',
+            'ParsePlugin', 'getInstallationObjectId',
             []
         );
     },
@@ -26,7 +26,7 @@ var ParsePushPlugin = {
     getSubscriptions: function(successCallback, errorCallback) {
         cordova.exec(
             successCallback, errorCallback,
-            'ParsePushPlugin', 'getSubscriptions',
+            'ParsePlugin', 'getSubscriptions',
             []
         );
     },
@@ -35,7 +35,7 @@ var ParsePushPlugin = {
         cordova.exec(
             successCallback,
             errorCallback,
-            'ParsePushPlugin',
+            'ParsePlugin',
             'subscribe',
             [ channel ]
         );
@@ -45,10 +45,10 @@ var ParsePushPlugin = {
         cordova.exec(
             successCallback,
             errorCallback,
-            'ParsePushPlugin',
+            'ParsePlugin',
             'unsubscribe',
             [ channel ]
         );
     }
 };
-module.exports = ParsePushPlugin;
+module.exports = ParsePlugin;
