@@ -1,4 +1,4 @@
-package com.phonegap.plugins;
+package org.apache.cordova.core;
 
 import java.util.List;
 import java.lang.Exception;
@@ -16,7 +16,7 @@ import com.parse.ParsePush;
 
 import android.util.Log;
 
-public class ParsePushPlugin extends CordovaPlugin {
+public class ParsePlugin extends CordovaPlugin {
     public static final String ACTION_REGISTER = "register";
     public static final String ACTION_GET_INSTALLATION_ID = "getInstallationId";
     public static final String ACTION_GET_INSTALLATION_OBJECT_ID = "getInstallationObjectId";
@@ -27,7 +27,7 @@ public class ParsePushPlugin extends CordovaPlugin {
     private static CordovaWebView gWebView;
     private static String gECB;
     
-    public static final String LOGTAG = "ParsePushPlugin";
+    public static final String LOGTAG = "ParsePlugin";
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {

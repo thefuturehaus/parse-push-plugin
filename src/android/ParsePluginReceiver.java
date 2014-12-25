@@ -1,4 +1,4 @@
-package com.phonegap.plugins;
+package org.apache.cordova.core;
 
 import com.parse.ParsePushBroadcastReceiver;
 import com.parse.ParseAnalytics;
@@ -14,15 +14,15 @@ import android.util.Log;
 import org.json.JSONObject;
 import org.json.JSONException;
 
-public class ParsePushPluginReceiver extends ParsePushBroadcastReceiver
+public class ParsePluginReceiver extends ParsePushBroadcastReceiver
 {	
-	public static final String LOGTAG = "ParsePushPluginReceiver";
+	public static final String LOGTAG = "ParsePluginReceiver";
 	
 	@Override
 	protected void onPushReceive(Context context, Intent intent) {
 		super.onPushReceive(context, intent);
 		JSONObject pushData = getPushData(intent);
-		if(pushData != null) ParsePushPlugin.javascriptECB( pushData );
+		if(pushData != null) ParsePlugin.javascriptECB( pushData );
 	}
 	
 	@Override
