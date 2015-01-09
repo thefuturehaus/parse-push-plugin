@@ -81,4 +81,19 @@
         <framework src="src/ios/Frameworks/ParseUI.framework" custom="true" />
         <framework src="src/ios/Frameworks/Bolts.framework" custom="true" />
     </platform>
+	<!-- window phone 8 -->
+	<platform name="wp8">
+		<config-file target="config.xml" parent="/*">
+			<feature name="ParsePlugin">
+				<param name="wp-package" value="ParsePlugin" />
+			</feature>
+        </config-file>
+		<config-file target="Properties/WMAppManifest.xml" parent="/Deployment/App/Capabilities">
+			<Capability Name="ID_CAP_NETWORKING" />
+			<Capability Name="ID_CAP_PUSH_NOTIFICATION" />
+		</config-file>		
+		<framework src="src/wp8/lib/Parse.Phone.dll" custom="true" />
+		<framework src="src/wp8/lib/Parse.dll" custom="true" />
+		<source-file src="src/wp8/ParsePlugin.cs"/>
+	</platform>
 </plugin>

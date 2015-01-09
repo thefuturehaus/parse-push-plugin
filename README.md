@@ -7,9 +7,7 @@ Phonegap 3.x plugin for Parse.com push service.
 makes it fairly useless for PN in Phonegap/Cordova. This plugin bridges the gap by leveraging native Parse.com SDKs
 to register/receive PNs and allow a few essential methods to be accessible from Javascript. 
 
-_Please note that I've only worked on the Android aspect of this fork. The iOS side is not yet up to date._
-
-For Android, Parse SDK v1.7.1 is used. This means GCM support and no more background process `PushService` unnecessarily
+For Android, Parse SDK v1.8.0 is used. This means GCM support and no more background process `PushService` unnecessarily
 taps device battery to duplicate what GCM already provides.
 
 This plugin exposes the four native Android API push services to JS:
@@ -25,11 +23,15 @@ Installation
 Pick one of these two commands:
 
 ```
-phonegap local plugin add https://github.com/taivo/parse-push-plugin
-cordova plugin add https://github.com/taivo/parse-push-plugin
+phonegap local plugin add https://github.com/cookys/parse-push-plugin
+cordova plugin add https://github.com/cookys/parse-push-plugin
 ```
 
-####Android devices without Google Cloud Messaging:
+####Android devices
+
+Now uses 1.8.0 SDK
+
+##### Android devices without Google Cloud Messaging:
 If you only care about GCM devices, you're good to go. Move on to the [Usage](#usage) section. 
 
 The automatic setup above does not work for non-GCM devices. To support them, the `ParseBroadcastReceiver`
@@ -78,15 +80,60 @@ named MainApplication.java and define it this way
 In the `<application>` tag, add the attribute `android:name="MainApplication"`. Obviously, you don't have
 to name your application class this way, but you have to use the same name in 3 and 4. 
 
+####iOS device
+
+Now uses 1.6.1 SDK
+
+
+##### Add this to your AppDelegates didFinishLaunchingWithOptions
+```objective-c
+
+[Parse setApplicationId:@"Your Application ID" clientKey:@"Your Client Key"];
+
+//-- Set Notification
+if ([application respondsToSelector:@selector(isRegisteredForRemoteNotifications)])
+{
+       // iOS 8 Notifications
+       [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
+
+       [application registerForRemoteNotifications];
+}
+else
+{
+      // iOS < 8 Notifications
+      [application registerForRemoteNotificationTypes:
+                 (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound)];
+}
+return YES;
+    
+```
+
+####Windows Phone 8 device
+
+Now uses 1.3.2 SDK
+
+Get your APP_ID and .NET_KEY from [Parse.com quickstart](https://www.parse.com/apps/quickstart#parse_push/windows_phone/existing) and add them below initialization code at ```App()``` in `App.xaml.cs`.
+```c#
+            // Parse initialization
+            ParseClient.Initialize("APP_ID", ".NET_KEY");
+
+            this.Startup += async (sender, args) =>
+            {
+                ParseAnalytics.TrackAppOpens(RootFrame);
+                await ParseInstallation.CurrentInstallation.SaveAsync();
+            };
+```
+The notification toast on WP8 won't show up when your app is in forground. To quickly fix that, this plugin will auto add a callback to pop a messagebox after calling ``` parsePlugin.subscribe ```.
+
 Usage
 -----
-Once the device is ready, call ```ParsePushPlugin.register()```. This will register the device with Parse, you should see this reflected in your Parse control panel.
+Once the device is ready, call ```parsePlugin.register()```. This will register the device with Parse, you should see this reflected in your Parse control panel.
 You can optionally specify an event callback to be invoked when a push notification is received.
 After successful registration, you can call any of the other available methods.
 
 ```javascript
 <script type="text/javascript">
-	ParsePushPlugin.register({
+	parsePlugin.register({
 	appId:"PARSE_APPID", clientKey:"PARSE_CLIENT_KEY", ecb:"onNotification"}, 
 	function() {
 		alert('successfully registered device!');
@@ -96,25 +143,25 @@ After successful registration, you can call any of the other available methods.
 	});
 	
 	function doWhatever(){
-	    ParsePushPlugin.getInstallationId(function(id) {
+	    parsePlugin.getInstallationId(function(id) {
 		    alert(id);
 	    }, function(e) {
 		    alert('error');
 	    });
 	    
-	    ParsePushPlugin.getSubscriptions(function(subscriptions) {
+	    parsePlugin.getSubscriptions(function(subscriptions) {
 		    alert(subscriptions);
 	    }, function(e) {
 		    alert('error');
 	    });
 	
-	    ParsePushPlugin.subscribe('SampleChannel', function() {
+	    parsePlugin.subscribe('SampleChannel', function() {
 		    alert('OK');
 	    }, function(e) {
 		    alert('error');
 	    });
 	
-	    ParsePushPlugin.unsubscribe('SampleChannel', function(msg) {
+	    parsePlugin.unsubscribe('SampleChannel', function(msg) {
 		    alert('OK');
 	    }, function(e) {
 		    alert('error');
