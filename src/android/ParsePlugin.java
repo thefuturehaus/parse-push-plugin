@@ -6,6 +6,8 @@ import java.lang.Exception;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaInterface;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -130,9 +132,10 @@ public class ParsePlugin extends CordovaPlugin {
     }
     
     @Override
-    protected void pluginInitialize() {
-    	gECB = null;
-    	gWebView = this.webView;
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+        gECB = null;
+        gWebView = this.webView;
     }
     
     @Override

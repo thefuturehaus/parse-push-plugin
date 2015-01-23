@@ -8,7 +8,7 @@
 
 NSString *storyURL;
 
-- (void)initialize: (CDVInvokedUrlCommand*)command
+- (void)register: (CDVInvokedUrlCommand*)command
 {
     CDVPluginResult* pluginResult = nil;
     NSString *appId = [command.arguments objectAtIndex:0];
@@ -86,21 +86,21 @@ NSString *storyURL;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)getNotification: (CDVInvokedUrlCommand *)command
-{
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:storyURL];
-    storyURL = NULL;
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
+// - (void)getNotification: (CDVInvokedUrlCommand *)command
+// {
+//     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:storyURL];
+//     storyURL = NULL;
+//     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+// }
 
-- (void)handleBackgroundNotification:(NSDictionary *)notification
-{
-    if ([notification objectForKey:@"url"])
-    {
-        // do something with job id
-        storyURL = [notification objectForKey:@"url"];
-    }
-}
+// - (void)handleBackgroundNotification:(NSDictionary *)notification
+// {
+//     if ([notification objectForKey:@"url"])
+//     {
+//         // do something with job id
+//         storyURL = [notification objectForKey:@"url"];
+//     }
+// }
 
 @end
 
@@ -141,6 +141,20 @@ void MethodSwizzle(Class c, SEL originalSelector) {
     [currentInstallation saveInBackground];
 }
 
+-(NSString *) getJson:(NSDictionary *) data {
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data
+                                                       options:(NSJSONWritingOptions)    (NSJSONWritingPrettyPrinted)
+                                                         error:&error];
+    
+    if (! jsonData) {
+        NSLog(@"getJson: error: %@", error.localizedDescription);
+        return @"{}";
+    } else {
+        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    }
+}
+
 - (void)noop_application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
 {
 }
@@ -149,7 +163,13 @@ void MethodSwizzle(Class c, SEL originalSelector) {
 {
     // Call existing method
     [self swizzled_application:application didReceiveRemoteNotification:userInfo];
-    [PFPush handlePush:userInfo];
+    
+    // calls into javascript global function 'handleOpenURL'
+    NSString* jsString = [NSString stringWithFormat:@"onNotification(%@);", [self getJson:userInfo]];
+    jsString = [jsString stringByReplacingOccurrencesOfString: @"=" withString: @":"];
+    [self.viewController.webView stringByEvaluatingJavaScriptFromString:jsString];
+
+//    [PFPush handlePush:userInfo];
 }
 
 @end
