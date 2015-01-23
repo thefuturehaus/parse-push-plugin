@@ -32,7 +32,7 @@ cordova plugin add https://github.com/cookys/parse-push-plugin
 Now uses 1.8.0 SDK
 
 ##### Android devices without Google Cloud Messaging:
-If you only care about GCM devices, you're good to go. Move on to the [Usage](#usage) section. 
+If you only care about GCM devices, you're good to go. Move on to the step 3 & 4 of this section. 
 
 The automatic setup above does not work for non-GCM devices. To support them, the `ParseBroadcastReceiver`
 must be setup to work properly. My guess is this receiver takes care of establishing a persistent connection that will
@@ -127,7 +127,7 @@ The notification toast on WP8 won't show up when your app is in forground. To qu
 
 Usage
 -----
-Once the device is ready, call ```parsePlugin.register()```. This will register the device with Parse, you should see this reflected in your Parse control panel.
+Once the device is ready, call ```parsePlugin.register()``` if you are using Android.  Right now the iOS version didn't use the register method and parse actually has to be initialized in app delegate... so it's an oddly redunandant register call in that case. This will register the device with Parse, you should see this reflected in your Parse control panel.
 You can optionally specify an event callback to be invoked when a push notification is received.
 After successful registration, you can call any of the other available methods.
 
