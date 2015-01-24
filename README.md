@@ -114,9 +114,7 @@ NSString *url = [notificationPayload objectForKey:@"uri"];
 
 if (url != nil)
 {
-    // calls into javascript global function 'handleOpenURL'
-    NSString* jsString = [NSString stringWithFormat:@"handleOpenURL(\"%@\");", url];
-    [self.viewController.webView stringByEvaluatingJavaScriptFromString:jsString];
+    [self application:application openURL:[NSURL URLWithString:url] sourceApplication:nil annotation:nil];
 }
     
 return YES;
