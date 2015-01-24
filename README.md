@@ -3,6 +3,9 @@ Phonegap Parse.com Plugin
 
 Phonegap 3.x plugin for Parse.com push service.
 
+This fork has several changes to support deep linking to the uri parameter of the push notification in iOS and Android and 
+relies on the deep link plugin or a handleOpenURL() js function to be implemented in the cordova app.
+
 [Parse.com's](http://parse.com) Javascript API has no mechanism to register a device for or receive push notifications, which
 makes it fairly useless for PN in Phonegap/Cordova. This plugin bridges the gap by leveraging native Parse.com SDKs
 to register/receive PNs and allow a few essential methods to be accessible from Javascript. 
@@ -104,6 +107,18 @@ else
       [application registerForRemoteNotificationTypes:
                  (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound)];
 }
+
+// Extract the notification data
+NSDictionary *notificationPayload = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
+NSString *url = [notificationPayload objectForKey:@"uri"];
+
+if (url != nil)
+{
+    // calls into javascript global function 'handleOpenURL'
+    NSString* jsString = [NSString stringWithFormat:@"handleOpenURL(\"%@\");", url];
+    [self.viewController.webView stringByEvaluatingJavaScriptFromString:jsString];
+}
+    
 return YES;
     
 ```
