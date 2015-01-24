@@ -6,15 +6,25 @@
 
 @implementation CDVParsePlugin
 
-NSString *storyURL;
+NSString *ecb;
 
 - (void)register: (CDVInvokedUrlCommand*)command
 {
     CDVPluginResult* pluginResult = nil;
-    NSString *appId = [command.arguments objectAtIndex:0];
-    NSString *clientKey = [command.arguments objectAtIndex:1];
-    [Parse setApplicationId:appId clientKey:clientKey];
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    NSDictionary *args = [command.arguments objectAtIndex:0];
+    
+    if (args.count == 3)
+    {
+        NSString *appId = [args objectForKey:@"appId"];
+        NSString *clientKey = [args objectForKey:@"clientKey"];
+        ecb = [args objectForKey:@"ecb"];
+
+        [Parse setApplicationId:appId clientKey:clientKey];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    }
+    else{
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_INVALID_ACTION];
+    }
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -164,9 +174,7 @@ void MethodSwizzle(Class c, SEL originalSelector) {
     // Call existing method
     [self swizzled_application:application didReceiveRemoteNotification:userInfo];
     
-    // calls into javascript global function 'handleOpenURL'
-    NSString* jsString = [NSString stringWithFormat:@"onNotification(%@);", [self getJson:userInfo]];
-    jsString = [jsString stringByReplacingOccurrencesOfString: @"=" withString: @":"];
+    NSString* jsString = [NSString stringWithFormat:@"%@(%@);", ecb, [self getJson:userInfo]];
     [self.viewController.webView stringByEvaluatingJavaScriptFromString:jsString];
 
 //    [PFPush handlePush:userInfo];
