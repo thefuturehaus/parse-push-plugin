@@ -106,7 +106,7 @@ public class ParsePlugin extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
             	List<String> subscriptions = ParseInstallation.getCurrentInstallation().getList("channels");
-                callbackContext.success(subscriptions.toString());
+                callbackContext.success(new JSONArray(subscriptions));
             }
         });
     }
