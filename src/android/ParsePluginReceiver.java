@@ -46,6 +46,7 @@ public class ParsePluginReceiver extends ParsePushBroadcastReceiver
             activityIntent = new Intent(context, cls);
         }
         activityIntent.putExtras(intent.getExtras());
+        /*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
             stackBuilder.addParentStack(cls);
@@ -55,9 +56,11 @@ public class ParsePluginReceiver extends ParsePushBroadcastReceiver
             activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             context.startActivity(activityIntent);
-        }
+        }*/
+        activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(activityIntent);
     }
-	
+
 	private static JSONObject getPushData(Intent intent){
 		JSONObject pushData = null;
 		try {
