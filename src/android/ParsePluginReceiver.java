@@ -15,16 +15,16 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 public class ParsePluginReceiver extends ParsePushBroadcastReceiver
-{	
+{
 	public static final String LOGTAG = "ParsePluginReceiver";
-	
+
 	@Override
 	protected void onPushReceive(Context context, Intent intent) {
 		super.onPushReceive(context, intent);
 		JSONObject pushData = getPushData(intent);
 		if(pushData != null) ParsePlugin.javascriptECB( pushData );
 	}
-	
+
 	@Override
     protected void onPushOpen(Context context, Intent intent) {
 		//
@@ -36,7 +36,9 @@ public class ParsePluginReceiver extends ParsePushBroadcastReceiver
         JSONObject pushData = getPushData(intent);
         String uriString = pushData.optString("uri");
         Class<? extends Activity> cls = getActivity(context, intent);
-        
+
+        if (pushData != null) ParsePlugin.javascriptPushOpen( pushData );
+
         Intent activityIntent;
         if (!uriString.isEmpty()) {
             activityIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uriString));

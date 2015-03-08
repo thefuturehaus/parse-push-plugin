@@ -25,10 +25,11 @@ public class ParsePlugin extends CordovaPlugin {
     public static final String ACTION_GET_SUBSCRIPTIONS = "getSubscriptions";
     public static final String ACTION_SUBSCRIBE = "subscribe";
     public static final String ACTION_UNSUBSCRIBE = "unsubscribe";
-    
+
     private static CordovaWebView gWebView;
     private static String gECB;
-    
+    private static String gPushOpen;
+
     public static final String LOGTAG = "ParsePlugin";
 
     @Override
@@ -66,16 +67,17 @@ public class ParsePlugin extends CordovaPlugin {
         	JSONObject jo = args.getJSONObject(0);
             String appId = jo.getString("appId");
             String clientKey = jo.getString("clientKey");
-            
+
         	//
         	// initialize Parse
             Parse.initialize(cordova.getActivity(), appId, clientKey);
             ParseInstallation.getCurrentInstallation().saveInBackground();
-            
+
             //
             // register callbacks for notification events
             gECB = jo.optString("ecb");
-            
+            gPushOpen = jo.optString("pushOpen");
+
             callbackContext.success();
         } catch (JSONException e) {
             callbackContext.error("JSONException: " + e.toString());
@@ -120,28 +122,37 @@ public class ParsePlugin extends CordovaPlugin {
     	ParsePush.unsubscribeInBackground(channel);
         callbackContext.success();
     }
-    
+
     /*
     * Use the cordova bridge to call the jsCB and pass it _json as param
     */
     public static void javascriptECB(JSONObject _json){
     	String snippet = "javascript:" + gECB + "(" + _json.toString() + ")";
     	Log.v(LOGTAG, "javascriptCB: " + snippet);
-    	
+
     	if (gECB != null && !gECB.isEmpty() && gWebView != null) gWebView.sendJavascript(snippet);
     }
-    
+
+    public static void javascriptPushOpen(JSONObject _json) {
+        String snippet = "javascript:" + gPushOpen + "(" + _json.toString() + ")";
+    	Log.v(LOGTAG, "javascriptCB: " + snippet);
+
+    	if (gPushOpen != null && !gPushOpen.isEmpty() && gWebView != null) gWebView.sendJavascript(snippet);
+    }
+
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
         gECB = null;
+        gPushOpen = null;
         gWebView = this.webView;
     }
-    
+
     @Override
     public void onDestroy() {
     	super.onDestroy();
     	gECB = null;
+    	gPushOpen = null;
     	gWebView = null;
     }
 }
