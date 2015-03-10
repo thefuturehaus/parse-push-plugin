@@ -3,12 +3,12 @@ Phonegap Parse.com Plugin
 
 Phonegap 3.x plugin for Parse.com push service.
 
-This fork has several changes to support deep linking to the uri parameter of the push notification in iOS and Android and 
+This fork has several changes to support deep linking to the uri parameter of the push notification in iOS and Android and
 relies on the deep link plugin or a handleOpenURL() js function to be implemented in the cordova app.
 
 [Parse.com's](http://parse.com) Javascript API has no mechanism to register a device for or receive push notifications, which
 makes it fairly useless for PN in Phonegap/Cordova. This plugin bridges the gap by leveraging native Parse.com SDKs
-to register/receive PNs and allow a few essential methods to be accessible from Javascript. 
+to register/receive PNs and allow a few essential methods to be accessible from Javascript.
 
 For Android, Parse SDK v1.8.0 is used. This means GCM support and no more background process `PushService` unnecessarily
 taps device battery to duplicate what GCM already provides.
@@ -30,12 +30,22 @@ phonegap local plugin add https://github.com/cookys/parse-push-plugin
 cordova plugin add https://github.com/cookys/parse-push-plugin
 ```
 
+####config.xml
+
+Add the following to your config.xml. The plugin will read these values so you don't have to manually modify
+AppDelegate.m
+
+```xml
+<preference name="ParseAppId" value="YOUR_PARSE_APPID" />
+<preference name="ParseClientKey" value="YOUR_PARSE_CLIENT_KEY" />
+```
+
 ####Android devices
 
 Now uses 1.8.0 SDK
 
 ##### Android devices without Google Cloud Messaging:
-If you only care about GCM devices, you're good to go. Move on to the step 3 & 4 of this section. 
+If you only care about GCM devices, you're good to go. Move on to the step 3 & 4 of this section.
 
 The automatic setup above does not work for non-GCM devices. To support them, the `ParseBroadcastReceiver`
 must be setup to work properly. My guess is this receiver takes care of establishing a persistent connection that will
@@ -50,7 +60,7 @@ handle push notifications without GCM. Follow these steps for `ParseBroadcastRec
        </intent-filter>
     </receiver>
     ```
-    
+
 2. Add the following permission to AndroidManifest.xml, as a sibling of the `<application>` tag
     ```xml
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -81,45 +91,12 @@ named MainApplication.java and define it this way
     ```
 4. The final step is to register MainApplication in AndroidManifest.xml so it's used instead of the default.
 In the `<application>` tag, add the attribute `android:name="MainApplication"`. Obviously, you don't have
-to name your application class this way, but you have to use the same name in 3 and 4. 
+to name your application class this way, but you have to use the same name in 3 and 4.
 
 ####iOS device
 
 Now uses 1.6.1 SDK
 
-
-##### Add this to your AppDelegates didFinishLaunchingWithOptions
-```objective-c
-
-[Parse setApplicationId:@"Your Application ID" clientKey:@"Your Client Key"];
-
-//-- Set Notification
-if ([application respondsToSelector:@selector(isRegisteredForRemoteNotifications)])
-{
-       // iOS 8 Notifications
-       [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
-
-       [application registerForRemoteNotifications];
-}
-else
-{
-      // iOS < 8 Notifications
-      [application registerForRemoteNotificationTypes:
-                 (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound)];
-}
-
-// Extract the notification data
-NSDictionary *notificationPayload = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
-NSString *url = [notificationPayload objectForKey:@"uri"];
-
-if (url != nil)
-{
-    [self application:application openURL:[NSURL URLWithString:url] sourceApplication:nil annotation:nil];
-}
-    
-return YES;
-    
-```
 
 ####Windows Phone 8 device
 
@@ -147,40 +124,40 @@ After successful registration, you can call any of the other available methods.
 ```javascript
 <script type="text/javascript">
 	parsePlugin.register({
-	appId:"PARSE_APPID", clientKey:"PARSE_CLIENT_KEY", ecb:"onNotification"}, 
+	appId:"PARSE_APPID", clientKey:"PARSE_CLIENT_KEY", ecb:"onNotification"},
 	function() {
 		alert('successfully registered device!');
 		doWhatever();
 	}, function(e) {
 		alert('error registering device: ' + e);
 	});
-	
+
 	function doWhatever(){
 	    parsePlugin.getInstallationId(function(id) {
 		    alert(id);
 	    }, function(e) {
 		    alert('error');
 	    });
-	    
+
 	    parsePlugin.getSubscriptions(function(subscriptions) {
 		    alert(subscriptions);
 	    }, function(e) {
 		    alert('error');
 	    });
-	
+
 	    parsePlugin.subscribe('SampleChannel', function() {
 		    alert('OK');
 	    }, function(e) {
 		    alert('error');
 	    });
-	
+
 	    parsePlugin.unsubscribe('SampleChannel', function(msg) {
 		    alert('OK');
 	    }, function(e) {
 		    alert('error');
 	    });
 	}
-	
+
 	function onNotification(pnObj){
     	alert("received pn: " + JSON.stringify(pnObj));
 	}

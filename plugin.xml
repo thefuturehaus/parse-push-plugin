@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
-        id="org.apache.cordova.core.ParsePlugin" version="0.2.0">
+        id="org.apache.cordova.core.ParsePlugin" version="0.2.1">
     <name>ParsePlugin</name>
     <description>Phonegap/Cordova plugin for Parse.com push notification</description>
 
@@ -49,14 +49,14 @@
         <source-file src="src/android/parse/bolts-android-1.1.4.jar" target-dir="libs" framework="true" />
         <source-file src="src/android/parse/ParseCrashReporting-1.8.0.jar" target-dir="libs" framework="true" />
         <source-file src="src/android/ParsePlugin.java" target-dir="src/org/apache/cordova/core" />
-        <source-file src="src/android/ParsePluginReceiver.java" target-dir="src/org/apache/cordova/core" />      
+        <source-file src="src/android/ParsePluginReceiver.java" target-dir="src/org/apache/cordova/core" />
      </platform>
 
     <!-- ios -->
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
             <feature name="ParsePlugin">
-                <param name="ios-package" value="CDVParsePlugin" />
+                <param name="ios-package" onload="true" value="CDVParsePlugin" />
             </feature>
         </config-file>
         <header-file src="src/ios/CDVParsePlugin.h" />
@@ -91,7 +91,7 @@
 		<config-file target="Properties/WMAppManifest.xml" parent="/Deployment/App/Capabilities">
 			<Capability Name="ID_CAP_NETWORKING" />
 			<Capability Name="ID_CAP_PUSH_NOTIFICATION" />
-		</config-file>		
+		</config-file>
 		<framework src="src/wp8/lib/Parse.Phone.dll" custom="true" />
 		<framework src="src/wp8/lib/Parse.dll" custom="true" />
 		<source-file src="src/wp8/ParsePlugin.cs"/>

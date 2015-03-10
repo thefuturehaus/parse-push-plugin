@@ -7,24 +7,21 @@
 @implementation CDVParsePlugin
 
 NSString *ecb;
+NSString *pushOpen;
 
 - (void)register: (CDVInvokedUrlCommand*)command
 {
     CDVPluginResult* pluginResult = nil;
     NSDictionary *args = [command.arguments objectAtIndex:0];
-    
-    if (args.count == 3)
-    {
-        NSString *appId = [args objectForKey:@"appId"];
-        NSString *clientKey = [args objectForKey:@"clientKey"];
-        ecb = [args objectForKey:@"ecb"];
 
-        [Parse setApplicationId:appId clientKey:clientKey];
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    }
-    else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_INVALID_ACTION];
-    }
+    NSString *appId = [args objectForKey:@"appId"];
+    NSString *clientKey = [args objectForKey:@"clientKey"];
+    ecb = [args objectForKey:@"ecb"];
+    pushOpen = [args objectForKey:@"pushOpen"];
+
+    [Parse setApplicationId:appId clientKey:clientKey];
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -63,17 +60,17 @@ NSString *ecb;
     if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)]) {
         UIUserNotificationSettings *settings =
         [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert |
-                                                     UIUserNotificationTypeBadge |
-                                                     UIUserNotificationTypeSound
+         UIUserNotificationTypeBadge |
+         UIUserNotificationTypeSound
                                           categories:nil];
         [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
         [[UIApplication sharedApplication] registerForRemoteNotifications];
     }
     else {
         [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
-            UIRemoteNotificationTypeBadge |
-            UIRemoteNotificationTypeAlert |
-            UIRemoteNotificationTypeSound];
+         UIRemoteNotificationTypeBadge |
+         UIRemoteNotificationTypeAlert |
+         UIRemoteNotificationTypeSound];
     }
 
     CDVPluginResult* pluginResult = nil;
@@ -116,6 +113,12 @@ NSString *ecb;
 
 @implementation AppDelegate (CDVParsePlugin)
 
+- (id)settingForKey:(NSString*)key
+{
+    CDVParsePlugin* gp = (CDVParsePlugin*)[[self.viewController pluginObjects] objectForKey:@"CDVParsePlugin"];
+    return [gp.commandDelegate.settings objectForKey:[key lowercaseString]];
+}
+
 void MethodSwizzle(Class c, SEL originalSelector) {
     NSString *selectorString = NSStringFromSelector(originalSelector);
     SEL newSelector = NSSelectorFromString([@"swizzled_" stringByAppendingString:selectorString]);
@@ -135,6 +138,7 @@ void MethodSwizzle(Class c, SEL originalSelector) {
 {
     MethodSwizzle([self class], @selector(application:didRegisterForRemoteNotificationsWithDeviceToken:));
     MethodSwizzle([self class], @selector(application:didReceiveRemoteNotification:));
+    MethodSwizzle([self class], @selector(application:didFinishLaunchingWithOptions:));
 }
 
 - (void)noop_application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken
@@ -156,7 +160,7 @@ void MethodSwizzle(Class c, SEL originalSelector) {
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data
                                                        options:(NSJSONWritingOptions)    (NSJSONWritingPrettyPrinted)
                                                          error:&error];
-    
+
     if (! jsonData) {
         NSLog(@"getJson: error: %@", error.localizedDescription);
         return @"{}";
@@ -173,11 +177,51 @@ void MethodSwizzle(Class c, SEL originalSelector) {
 {
     // Call existing method
     [self swizzled_application:application didReceiveRemoteNotification:userInfo];
-    
+
+    // fire the receive handler
     NSString* jsString = [NSString stringWithFormat:@"%@(%@);", ecb, [self getJson:userInfo]];
     [self.viewController.webView stringByEvaluatingJavaScriptFromString:jsString];
 
-//    [PFPush handlePush:userInfo];
+    if (application.applicationState != UIApplicationStateActive) {
+        // app was inactive so user tapped the notification (pushOpen)
+        NSString* jsString = [NSString stringWithFormat:@"%@(%@);", pushOpen, [self getJson:userInfo]];
+        [self.viewController.webView stringByEvaluatingJavaScriptFromString:jsString];
+    }
 }
 
+- (BOOL)noop_application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
+{
+}
+
+- (BOOL)swizzled_application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
+{
+    // Call existing method
+    BOOL result = [self swizzled_application:application didFinishLaunchingWithOptions:launchOptions];
+
+    [Parse setApplicationId:[self settingForKey:@"ParseAppId"] clientKey:[self settingForKey:@"ParseClientKey"]];
+
+    //-- Set Notification
+    if ([application respondsToSelector:@selector(isRegisteredForRemoteNotifications)])
+    {
+        // iOS 8 Notifications
+        [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
+        [application registerForRemoteNotifications];
+    }
+    else
+    {
+        // iOS < 8 Notifications
+        [application registerForRemoteNotificationTypes:
+         (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound)];
+    }
+
+    UILocalNotification *notification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
+    if (notification) {
+        NSLog(@"app recieved notification from remote: %@", notification);
+        [self application:application didReceiveRemoteNotification:(NSDictionary*)notification];
+    } else {
+        NSLog(@"app did not recieve notification");
+    }
+
+    return result;
+}
 @end
