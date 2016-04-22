@@ -66,11 +66,16 @@ public class ParsePlugin extends CordovaPlugin {
     	try {
         	JSONObject jo = args.getJSONObject(0);
             String appId = jo.getString("appId");
-            String clientKey = jo.getString("clientKey");
+            String server = jo.getString("server");
 
         	//
         	// initialize Parse
-            Parse.initialize(cordova.getActivity(), appId, clientKey);
+            Parse.initialize(new Parse.Configuration.Builder(cordova.getActivity())
+                .applicationId(appId)
+                .clientKey(null)
+                .server(server)
+                .build()
+            );
             ParseInstallation.getCurrentInstallation().saveInBackground();
 
             //

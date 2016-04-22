@@ -13,18 +13,17 @@ NSString *ecb;
     CDVPluginResult* pluginResult = nil;
     NSDictionary *args = [command.arguments objectAtIndex:0];
     
-    if (args.count == 3)
-    {
-        NSString *appId = [args objectForKey:@"appId"];
-        NSString *clientKey = [args objectForKey:@"clientKey"];
-        ecb = [args objectForKey:@"ecb"];
+    NSString *appId = [args objectForKey:@"appId"];
+    NSString *server = [args objectForKey:@"server"];
+    ecb = [args objectForKey:@"ecb"];
 
-        [Parse setApplicationId:appId clientKey:clientKey];
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    }
-    else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_INVALID_ACTION];
-    }
+    [Parse initializeWithConfiguration:[ParseClientConfiguration configurationWithBlock:^(id<ParseMutableClientConfiguration> configuration) {
+       configuration.applicationId = appId;
+       configuration.clientKey = @"";
+       configuration.server = server;
+    }]];
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -175,7 +174,13 @@ void MethodSwizzle(Class c, SEL originalSelector) {
     [self swizzled_application:application didReceiveRemoteNotification:userInfo];
     
     NSString* jsString = [NSString stringWithFormat:@"%@(%@);", ecb, [self getJson:userInfo]];
-    [self.viewController.webView stringByEvaluatingJavaScriptFromString:jsString];
+    if ([self.viewController.webView respondsToSelector:@selector(stringByEvaluatingJavaScriptFromString:)]) {
+      // Cordova-iOS pre-4
+      [self.viewController.webView performSelectorOnMainThread:@selector(stringByEvaluatingJavaScriptFromString:) withObject:jsString waitUntilDone:NO];
+    } else {
+      // Cordova-iOS 4+
+      [self.viewController.webView performSelectorOnMainThread:@selector(evaluateJavaScript:completionHandler:) withObject:jsString waitUntilDone:NO];
+    }
 
 //    [PFPush handlePush:userInfo];
 }
