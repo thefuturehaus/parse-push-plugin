@@ -26,8 +26,8 @@ Installation
 Pick one of these two commands:
 
 ```
-phonegap local plugin add https://github.com/cookys/parse-push-plugin
-cordova plugin add https://github.com/cookys/parse-push-plugin
+phonegap local plugin add https://github.com/thefuturehaus/parse-push-plugin
+cordova plugin add https://github.com/thefuturehaus/parse-push-plugin
 ```
 
 ####Android devices
@@ -147,7 +147,7 @@ After successful registration, you can call any of the other available methods.
 ```javascript
 <script type="text/javascript">
 	parsePlugin.register({
-	appId:"PARSE_APPID", clientKey:"PARSE_CLIENT_KEY", ecb:"onNotification"}, 
+	appId:"PARSE_APPID", clientKey:"PARSE_CLIENT_KEY", ecb:"onNotification", pushOpen: "onPushOpen" }, 
 	function() {
 		alert('successfully registered device!');
 		doWhatever();
@@ -184,6 +184,11 @@ After successful registration, you can call any of the other available methods.
 	function onNotification(pnObj){
     	alert("received pn: " + JSON.stringify(pnObj));
 	}
+	
+	function onPushOpen(pnObj){
+    	alert("open from pn: " + JSON.stringify(pnObj));
+	}
+
 </script>
 ```
 
