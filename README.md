@@ -88,6 +88,7 @@ to name your application class this way, but you have to use the same name in 3 
 ####iOS device
 
 Now uses this SDKs:
+
 1. Parse 1.12.0
 2. ParseUI 1.2.0
 3. Bolts 1.5.1
