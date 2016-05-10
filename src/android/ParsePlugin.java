@@ -29,6 +29,7 @@ public class ParsePlugin extends CordovaPlugin {
     private static CordovaWebView gWebView;
     private static String gECB;
     private static String gPushOpen;
+	private static JSONObject pushData = null;
 
     public static final String LOGTAG = "ParsePlugin";
 
@@ -70,19 +71,24 @@ public class ParsePlugin extends CordovaPlugin {
 
         	//
         	// initialize Parse
-            Parse.initialize(new Parse.Configuration.Builder(cordova.getActivity())
-                .applicationId(appId)
-                .clientKey(null)
-                .server(server)
-                .build()
-            );
+            try {
+                Parse.initialize(new Parse.Configuration.Builder(cordova.getActivity())
+                    .applicationId(appId)
+                    .clientKey(null)
+                    .server(server)
+                    .build()
+                );
+            } catch (IllegalStateException e) { }
             ParseInstallation.getCurrentInstallation().saveInBackground();
 
             //
             // register callbacks for notification events
             gECB = jo.optString("ecb");
             gPushOpen = jo.optString("pushOpen");
-
+			if(pushData != null )
+			{
+				ParsePlugin.javascriptPushOpen( pushData );
+			}
             callbackContext.success();
         } catch (JSONException e) {
             callbackContext.error("JSONException: " + e.toString());
@@ -139,10 +145,17 @@ public class ParsePlugin extends CordovaPlugin {
     }
 
     public static void javascriptPushOpen(JSONObject _json) {
+		
         String snippet = "javascript:" + gPushOpen + "(" + _json.toString() + ")";
     	Log.v(LOGTAG, "javascriptCB: " + snippet);
-
-    	if (gPushOpen != null && !gPushOpen.isEmpty() && gWebView != null) gWebView.sendJavascript(snippet);
+		
+    	if (gPushOpen != null && !gPushOpen.isEmpty() && gWebView != null) {
+			gWebView.sendJavascript(snippet);
+			pushData = null;
+		}
+		else{
+			pushData = _json;
+		}
     }
 
     @Override
