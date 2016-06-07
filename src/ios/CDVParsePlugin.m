@@ -19,14 +19,14 @@ NSString *ecb;
     ecb = [args objectForKey:@"ecb"];
 
     if (appId != nil && appId != nil && clientKey != nil && server != nil) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         [Parse initializeWithConfiguration:[ParseClientConfiguration configurationWithBlock:^(id<ParseMutableClientConfiguration> configuration) {
             configuration.applicationId = appId;
             configuration.clientKey = clientKey;
             configuration.server = server;
         }]];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"arguments cant be nil"];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"arguments cant be null"];
     }
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
