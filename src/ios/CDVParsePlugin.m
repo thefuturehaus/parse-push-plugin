@@ -9,20 +9,25 @@
 NSString *ecb;
 
 - (void)register: (CDVInvokedUrlCommand*)command
-{
+{{
     CDVPluginResult* pluginResult = nil;
     NSDictionary *args = [command.arguments objectAtIndex:0];
-    
+
     NSString *appId = [args objectForKey:@"appId"];
     NSString *server = [args objectForKey:@"server"];
+    NSString *clientKey = [args objectForKey:@"clientKey"];
     ecb = [args objectForKey:@"ecb"];
 
-    [Parse initializeWithConfiguration:[ParseClientConfiguration configurationWithBlock:^(id<ParseMutableClientConfiguration> configuration) {
-       configuration.applicationId = appId;
-       configuration.clientKey = @"";
-       configuration.server = server;
-    }]];
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    if (appId != nil && appId != nil && clientKey != nil && server != nil) {
+        [Parse initializeWithConfiguration:[ParseClientConfiguration configurationWithBlock:^(id<ParseMutableClientConfiguration> configuration) {
+            configuration.applicationId = appId;
+            configuration.clientKey = clientKey;
+            configuration.server = server;
+        }]];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    }else{
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"arguments cant be null"];
+    }
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -155,7 +160,7 @@ void MethodSwizzle(Class c, SEL originalSelector) {
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data
                                                        options:(NSJSONWritingOptions)    (NSJSONWritingPrettyPrinted)
                                                          error:&error];
-    
+
     if (! jsonData) {
         NSLog(@"getJson: error: %@", error.localizedDescription);
         return @"{}";
@@ -172,7 +177,7 @@ void MethodSwizzle(Class c, SEL originalSelector) {
 {
     // Call existing method
     [self swizzled_application:application didReceiveRemoteNotification:userInfo];
-    
+
     NSString* jsString = [NSString stringWithFormat:@"%@(%@);", ecb, [self getJson:userInfo]];
     if ([self.viewController.webView respondsToSelector:@selector(stringByEvaluatingJavaScriptFromString:)]) {
       // Cordova-iOS pre-4
