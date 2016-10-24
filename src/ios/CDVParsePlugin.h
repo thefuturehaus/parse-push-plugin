@@ -1,7 +1,8 @@
 #import <Cordova/CDV.h>
 #import "AppDelegate.h"
+#import <UserNotifications/UserNotifications.h>
 
-@interface CDVParsePlugin: CDVPlugin
+@interface CDVParsePlugin: CDVPlugin <UNUserNotificationCenterDelegate>
 
 - (void)getInstallationId: (CDVInvokedUrlCommand*)command;
 - (void)register: (CDVInvokedUrlCommand *)command;
