@@ -4,6 +4,7 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 
+
 @implementation CDVParsePlugin
 
 NSString *ecb;
@@ -99,21 +100,7 @@ NSString *ecb;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-// - (void)getNotification: (CDVInvokedUrlCommand *)command
-// {
-//     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:storyURL];
-//     storyURL = NULL;
-//     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-// }
 
-// - (void)handleBackgroundNotification:(NSDictionary *)notification
-// {
-//     if ([notification objectForKey:@"url"])
-//     {
-//         // do something with job id
-//         storyURL = [notification objectForKey:@"url"];
-//     }
-// }
 
 //MARK: UNUserNotificationCenterDelegate
 
@@ -121,12 +108,54 @@ NSString *ecb;
     //Called when a notification is delivered to a foreground app.
     NSLog(@"Userinfo %@",notification.request.content.userInfo);
     completionHandler(UNNotificationPresentationOptionAlert);
+    
+    NSLog(@"didReceiveRemoteNotification: %@", notification.request.content.userInfo);
+    NSString* jsString = [NSString stringWithFormat:@"%@(%@);", ecb, [self getJson:notification.request.content.userInfo]];
+    
+    AppDelegate* myAppDelegate = (AppDelegate*)[[UIApplication sharedApplication]delegate];
+    
+    if ([myAppDelegate.viewController.webView respondsToSelector:@selector(stringByEvaluatingJavaScriptFromString:)]) {
+        // Cordova-iOS pre-4
+        [myAppDelegate.viewController.webView performSelectorOnMainThread:@selector(stringByEvaluatingJavaScriptFromString:) withObject:jsString waitUntilDone:NO];
+    } else {
+        // Cordova-iOS 4+
+        [myAppDelegate.viewController.webView performSelectorOnMainThread:@selector(evaluateJavaScript:completionHandler:) withObject:jsString waitUntilDone:NO];
+    }
+}
+-(void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)())completionHandler{
+    //NSLog( @"Handle push from background or closed" );
+    
+    NSLog(@"Userinfo %@",response.notification.request.content.userInfo);
+    NSString* jsString = [NSString stringWithFormat:@"%@(%@);", ecb, [self getJson:response.notification.request.content.userInfo]];
+    
+    AppDelegate* myAppDelegate = (AppDelegate*)[[UIApplication sharedApplication]delegate];
+    
+    if ([myAppDelegate.viewController.webView respondsToSelector:@selector(stringByEvaluatingJavaScriptFromString:)]) {
+        // Cordova-iOS pre-4
+        [myAppDelegate.viewController.webView performSelectorOnMainThread:@selector(stringByEvaluatingJavaScriptFromString:) withObject:jsString waitUntilDone:NO];
+    } else {
+        // Cordova-iOS 4+
+        [myAppDelegate.viewController.webView performSelectorOnMainThread:@selector(evaluateJavaScript:completionHandler:) withObject:jsString waitUntilDone:NO];
+    }
 }
 
--(void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)())completionHandler{
-    //Called to let your app know which action was selected by the user for a given notification.
-    NSLog(@"Userinfo %@",response.notification.request.content.userInfo);
+
+
+-(NSString *) getJson:(NSDictionary *) data {
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data
+                                                       options:(NSJSONWritingOptions)    (NSJSONWritingPrettyPrinted)
+                                                         error:&error];
+    if (! jsonData) {
+        NSLog(@"getJson: error: %@", error.localizedDescription);
+        return @"{}";
+    } else {
+        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    }
 }
+
+
+
 
 @end
 
@@ -147,27 +176,10 @@ void MethodSwizzle(Class c, SEL originalSelector) {
     }
 }
 
-+ (AppDelegate*)sharedAppDelegate {
-    return (AppDelegate*)[[UIApplication sharedApplication] delegate];
-}
-
 + (void)load
 {
     //MethodSwizzle([self class], @selector(application:didRegisterForRemoteNotificationsWithDeviceToken:));
     MethodSwizzle([self class], @selector(application:didReceiveRemoteNotification:));
-}
-
--(NSString *) getJson:(NSDictionary *) data {
-    NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data
-                                                       options:(NSJSONWritingOptions)    (NSJSONWritingPrettyPrinted)
-                                                         error:&error];
-    if (! jsonData) {
-        NSLog(@"getJson: error: %@", error.localizedDescription);
-        return @"{}";
-    } else {
-        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    }
 }
 
 //MARK: Remote notifiations functions
@@ -181,34 +193,5 @@ void MethodSwizzle(Class c, SEL originalSelector) {
     [currentInstallation saveInBackground];
 }
 
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
-{
-    NSLog(@"didReceiveRemoteNotification: %@", userInfo);
-    NSString* jsString = [NSString stringWithFormat:@"%@(%@);", ecb, [self getJson:userInfo]];
-    if ([self.viewController.webView respondsToSelector:@selector(stringByEvaluatingJavaScriptFromString:)]) {
-        // Cordova-iOS pre-4
-        [self.viewController.webView performSelectorOnMainThread:@selector(stringByEvaluatingJavaScriptFromString:) withObject:jsString waitUntilDone:NO];
-    } else {
-        // Cordova-iOS 4+
-        [self.viewController.webView performSelectorOnMainThread:@selector(evaluateJavaScript:completionHandler:) withObject:jsString waitUntilDone:NO];
-    }
-    // [PFPush handlePush:userInfo];
-}
-
-//- (void)noop_application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken
-//{
-//}
-//
-//- (void)swizzled_application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken
-//{
-//}
-
-//- (void)noop_application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
-//{
-//}
-//
-//- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
-//{
-//}
 
 @end
