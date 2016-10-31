@@ -216,5 +216,5 @@ Phonegap > 3.0.0
 Tested with
 -------------
 * Cordova 6.0.0
-* iOS 9.x
+* iOS 10.x
 * Android 6.x
