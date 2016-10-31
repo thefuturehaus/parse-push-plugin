@@ -8,6 +8,7 @@
 @implementation CDVParsePlugin
 
 NSString *ecb;
+NSString *pushOpen;
 
 - (void)register: (CDVInvokedUrlCommand*)command
 {
@@ -18,6 +19,7 @@ NSString *ecb;
     NSString *server = [args objectForKey:@"server"];
     NSString *clientKey = [args objectForKey:@"clientKey"];
     ecb = [args objectForKey:@"ecb"];
+    pushOpen = [args objectForKey:@"pushOpen"];
 
     if (appId != nil && appId != nil && clientKey != nil && server != nil) {
         [Parse initializeWithConfiguration:[ParseClientConfiguration configurationWithBlock:^(id<ParseMutableClientConfiguration> configuration) {
@@ -106,10 +108,10 @@ NSString *ecb;
 
 -(void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler{
     //Called when a notification is delivered to a foreground app.
-    NSLog(@"Userinfo %@",notification.request.content.userInfo);
-    completionHandler(UNNotificationPresentationOptionAlert);
+    //NSLog( @"Handle push from foreground" );
+    NSLog(@"Userinfo: %@", notification.request.content.userInfo);
     
-    NSLog(@"didReceiveRemoteNotification: %@", notification.request.content.userInfo);
+    completionHandler(UNNotificationPresentationOptionAlert);
     NSString* jsString = [NSString stringWithFormat:@"%@(%@);", ecb, [self getJson:notification.request.content.userInfo]];
     
     AppDelegate* myAppDelegate = (AppDelegate*)[[UIApplication sharedApplication]delegate];
@@ -124,9 +126,10 @@ NSString *ecb;
 }
 -(void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)())completionHandler{
     //NSLog( @"Handle push from background or closed" );
-    
     NSLog(@"Userinfo %@",response.notification.request.content.userInfo);
-    NSString* jsString = [NSString stringWithFormat:@"%@(%@);", ecb, [self getJson:response.notification.request.content.userInfo]];
+    
+    completionHandler();
+    NSString* jsString = [NSString stringWithFormat:@"%@(%@);", pushOpen, [self getJson:response.notification.request.content.userInfo]];
     
     AppDelegate* myAppDelegate = (AppDelegate*)[[UIApplication sharedApplication]delegate];
     
@@ -137,6 +140,14 @@ NSString *ecb;
         // Cordova-iOS 4+
         [myAppDelegate.viewController.webView performSelectorOnMainThread:@selector(evaluateJavaScript:completionHandler:) withObject:jsString waitUntilDone:NO];
     }
+    NSLog(@"TRACKING PUSHES AND APP OPENS");
+    [PFPush handlePush:response.notification.request.content.userInfo];
+    [PFAnalytics trackAppOpenedWithRemoteNotificationPayload:response.notification.request.content.userInfo];
+    NSLog(@"applicationIconBadgeNumber %ld",[UIApplication sharedApplication].applicationIconBadgeNumber);
+    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    currentInstallation.badge = 0;
+    [currentInstallation saveInBackground];
 }
 
 
