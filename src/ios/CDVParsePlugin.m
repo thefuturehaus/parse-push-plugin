@@ -99,6 +99,39 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)setUserToInstallation:(CDVInvokedUrlCommand*) command
+{
+    NSDictionary *args = [command.arguments objectAtIndex:0];
+
+    NSString *userID = [args objectForKey:@"userID"];
+    NSString *username = [args objectForKey:@"username"];
+    NSString *password = [args objectForKey:@"password"];
+
+    if (userID != nil){
+        [PFUser logInWithUsernameInBackground:username password:password block:^(PFUser* user, NSError* error){
+            if(user){
+                PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+                currentInstallation[@"user"] = user;
+                [currentInstallation saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                    CDVPluginResult* pluginResult = nil;
+                    if (succeeded) {
+                        // The object has been saved.
+                        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+                    } else {
+                        // There was a problem, check error.description
+                        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error.localizedDescription];
+                    }
+                    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                }];
+            } else {
+                CDVPluginResult* pluginResult = nil;
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error.localizedDescription];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            }
+        }];
+    }
+}
+
 //MARK: UNUserNotificationCenterDelegate
 -(void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler{
     //Called when a notification is delivered to a foreground app.
@@ -158,7 +191,6 @@
         return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     }
 }
-
 @end
 
 @implementation AppDelegate (CDVParsePlugin)
@@ -189,6 +221,7 @@ void MethodSwizzle(Class c, SEL originalSelector) {
 - (id)getParsePluginInstance
 {
     return [self.viewController getCommandInstance:@"ParsePlugin"];
+    
 }
 
 - (id)swizzled_init
@@ -198,6 +231,7 @@ void MethodSwizzle(Class c, SEL originalSelector) {
         name:@"UIApplicationDidFinishLaunchingNotification" object:nil];
     return [self swizzled_init];
 }
+
 
 - (void)didLaunchViaNotification:(NSNotification *)notification
 {
