@@ -196,8 +196,7 @@ After successful registration, you can call any of the other available methods.
 		
 		parsePlugin.setUserToInstallation({
 			userID: "Parse_USER_ID",
-			username: "Parse_USER_NAME",
-			password: "Parse_USER_PASSWORD"
+			sessionToken: "PARSE_USER_SESSION_TOKEN"
 		}, function() {
 			alert("set user to installation succeed.");
 		}, function(e) {

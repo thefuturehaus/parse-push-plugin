@@ -104,12 +104,11 @@
     NSDictionary *args = [command.arguments objectAtIndex:0];
 
     NSString *userID = [args objectForKey:@"userID"];
-    NSString *username = [args objectForKey:@"username"];
-    NSString *password = [args objectForKey:@"password"];
+    NSString *sessionToken = [args objectForKey:@"sessionToken"];
 
     if (userID != nil){
-        [PFUser logInWithUsernameInBackground:username password:password block:^(PFUser* user, NSError* error){
-            if(user){
+        [PFUser becomeInBackground:sessionToken block:^(PFUser *user, NSError *error) {
+            if (user != nil) {
                 PFInstallation *currentInstallation = [PFInstallation currentInstallation];
                 currentInstallation[@"user"] = user;
                 [currentInstallation saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
@@ -123,7 +122,7 @@
                     }
                     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
                 }];
-            } else {
+            }else{
                 CDVPluginResult* pluginResult = nil;
                 pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error.localizedDescription];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
