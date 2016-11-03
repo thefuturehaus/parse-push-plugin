@@ -19,6 +19,7 @@ This plugin exposes the four native Android API push services to JS:
 * **getSubscriptions**( successCB, errorCB )
 * **subscribe**( channel, successCB, errorCB )
 * **unsubscribe**( channel, successCB, errorCB )
+* **setUserToInstallation**( options, successCB, errorCB ) -- add a pointer to a user in the installation
 
 Installation
 ------------
@@ -26,8 +27,8 @@ Installation
 Pick one of these two commands:
 
 ```
-phonegap local plugin add https://github.com/thefuturehaus/parse-push-plugin
-cordova plugin add https://github.com/thefuturehaus/parse-push-plugin
+phonegap local plugin add https://github.com/otmezger/parse-push-plugin
+cordova plugin add https://github.com/otmezger/parse-push-plugin
 ```
 
 ####Android devices
@@ -89,7 +90,7 @@ to name your application class this way, but you have to use the same name in 3 
 
 Now uses this SDKs:
 
-1. Parse 1.12.0
+1. Parse 1.14.2
 2. ParseUI 1.2.0
 3. Bolts 1.5.1
 
@@ -157,8 +158,11 @@ After successful registration, you can call any of the other available methods.
 ```javascript
 <script type="text/javascript">
 	parsePlugin.register({
-	appId:"PARSE_APPID", clientKey:"PARSE_CLIENT_KEY", ecb:"onNotification", pushOpen: "onPushOpen" },
-	function() {
+		appId: "PARSE_APPID",
+		clientKey: "PARSE_CLIENT_KEY",
+		ecb: "onNotification",
+		pushOpen: "onPushOpen"
+	}, function() {
 		alert('successfully registered device!');
 		doWhatever();
 	}, function(e) {
@@ -189,6 +193,16 @@ After successful registration, you can call any of the other available methods.
 	    }, function(e) {
 		    alert('error');
 	    });
+		
+		parsePlugin.setUserToInstallation({
+			userID: "Parse_USER_ID",
+			username: "Parse_USER_NAME",
+			password: "Parse_USER_PASSWORD"
+		}, function() {
+			alert("set user to installation succeed.");
+		}, function(e) {
+			alert("set user to installation failed.\n"+e);
+		});
 	}
 
 	function onNotification(pnObj){
