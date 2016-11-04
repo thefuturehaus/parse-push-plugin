@@ -12,6 +12,12 @@
 - (void)unsubscribe: (CDVInvokedUrlCommand *)command;
 // - (void)getNotification: (CDVInvokedUrlCommand *)command;
 // - (void)handleBackgroundNotification:(NSDictionary *)notification;
+-(void)jsCallback:(NSDictionary *)userInfo withAction:(NSString *)pnAction;
+-(void)trackingPushOpen: (NSDictionary*)userInfo;
+
+@property(strong, nonatomic) NSString * pushOpen;
+@property(strong, nonatomic) NSString * ecb;
+
 @end
 
 
