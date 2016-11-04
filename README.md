@@ -1,7 +1,7 @@
-Phonegap Parse.com Plugin
+Phonegap Parse-Platform Plugin for Push Notifications
 =========================
 
-Phonegap 3.x plugin for Parse.com push service.
+Phonegap 3.x plugin for Parse-Platform push notification service.
 
 This fork has several changes to support deep linking to the uri parameter of the push notification in iOS and Android and
 relies on the deep link plugin or a handleOpenURL() js function to be implemented in the cordova app.
@@ -13,13 +13,13 @@ to register/receive PNs and allow a few essential methods to be accessible from 
 For Android, Parse SDK v1.8.0 is used. This means GCM support and no more background process `PushService` unnecessarily
 taps device battery to duplicate what GCM already provides.
 
-This plugin exposes the four native Android API push services to JS:
+This plugin exposes the following functions to JS:
 * **register**( options, successCB, errorCB )   -- register the device + a JS event callback (when a PN is received)
 * **getInstallationId**( successCB, errorCB )
 * **getSubscriptions**( successCB, errorCB )
 * **subscribe**( channel, successCB, errorCB )
 * **unsubscribe**( channel, successCB, errorCB )
-* **setUserToInstallation**( options, successCB, errorCB ) -- add a pointer to a user in the installation
+* **setUserToInstallation**( options, successCB, errorCB ) -- add a pointer to a user in the installation class (must be first created!)
 
 Installation
 ------------
@@ -27,8 +27,8 @@ Installation
 Pick one of these two commands:
 
 ```
-phonegap local plugin add https://github.com/otmezger/parse-push-plugin
-cordova plugin add https://github.com/otmezger/parse-push-plugin
+phonegap local plugin add https://github.com/thefuturehaus/parse-push-plugin
+cordova plugin add https://github.com/thefuturehaus/parse-push-plugin
 ```
 
 ####Android devices
