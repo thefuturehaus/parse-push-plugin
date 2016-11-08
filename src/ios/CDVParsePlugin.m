@@ -102,10 +102,10 @@
 - (void)setUserToInstallation:(CDVInvokedUrlCommand*) command
 {
     NSDictionary *args = [command.arguments objectAtIndex:0];
-
+    
     NSString *userID = [args objectForKey:@"userID"];
     NSString *sessionToken = [args objectForKey:@"sessionToken"];
-
+    
     if (userID != nil){
         [PFUser becomeInBackground:sessionToken block:^(PFUser *user, NSError *error) {
             if (user != nil) {
@@ -179,10 +179,16 @@
 
 -(NSString *) getJson:(NSDictionary *) data {
     NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data
-                           options:(NSJSONWritingOptions)
-                           (NSJSONWritingPrettyPrinted)
-                           error:&error];
+    NSData *jsonData;
+    if (data != nil) {
+        jsonData = [NSJSONSerialization dataWithJSONObject:data
+                                                   options:(NSJSONWritingOptions)
+                    (NSJSONWritingPrettyPrinted)
+                                                     error:&error];
+    }else{
+        jsonData = nil;
+    }
+    
     if (! jsonData) {
         NSLog(@"getJson: error: %@", error.localizedDescription);
         return @"{}";
@@ -227,7 +233,7 @@ void MethodSwizzle(Class c, SEL originalSelector) {
 {
     // setup observer to handle notification on cold-start
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didLaunchViaNotification:)
-        name:@"UIApplicationDidFinishLaunchingNotification" object:nil];
+                                                 name:@"UIApplicationDidFinishLaunchingNotification" object:nil];
     return [self swizzled_init];
 }
 
