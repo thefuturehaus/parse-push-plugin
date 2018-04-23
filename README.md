@@ -24,11 +24,11 @@ This plugin exposes the following functions to JS:
 Installation
 ------------
 
-Pick one of these two commands:
+Pick one of these two commands, substituting your own GCM sender ID:
 
 ```
-phonegap local plugin add https://github.com/thefuturehaus/parse-push-plugin
-cordova plugin add https://github.com/thefuturehaus/parse-push-plugin
+phonegap local plugin add https://github.com/thefuturehaus/parse-push-plugin --variable GCM_SENDER_ID="123456789"
+cordova plugin add https://github.com/thefuturehaus/parse-push-plugin --variable GCM_SENDER_ID="123456789"
 ```
 
 ####Android devices
@@ -193,7 +193,7 @@ After successful registration, you can call any of the other available methods.
 	    }, function(e) {
 		    alert('error');
 	    });
-		
+
 		parsePlugin.setUserToInstallation({
 			userID: "Parse_USER_ID",
 			sessionToken: "PARSE_USER_SESSION_TOKEN"

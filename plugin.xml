@@ -5,6 +5,8 @@
     <name>ParsePlugin</name>
     <description>Phonegap/Cordova plugin for Parse.com push notification</description>
 
+    <preference name="GCM_SENDER_ID" />
+
     <js-module src="www/cdv-plugin-parse.js" name="ParsePlugin">
         <clobbers target="window.parsePlugin" />
     </js-module>
@@ -33,6 +35,7 @@
               <category android:name="$PACKAGE_NAME" />
             </intent-filter>
           </receiver>
+          <meta-data android:name="com.parse.push.gcm_sender_id" android:value="id:$GCM_SENDER_ID" />
         </config-file>
         <config-file target="AndroidManifest.xml" parent="/manifest">
           <uses-permission android:name="android.permission.INTERNET" />
@@ -48,7 +51,7 @@
         <source-file src="src/android/parse/Parse-1.13.0.jar" target-dir="libs" framework="true" />
         <source-file src="src/android/parse/bolts-tasks-1.4.0.jar" target-dir="libs" framework="true" />
         <source-file src="src/android/ParsePlugin.java" target-dir="src/org/apache/cordova/core" />
-        <source-file src="src/android/ParsePluginReceiver.java" target-dir="src/org/apache/cordova/core" />      
+        <source-file src="src/android/ParsePluginReceiver.java" target-dir="src/org/apache/cordova/core" />
      </platform>
 
     <!-- ios -->
@@ -90,7 +93,7 @@
 		<config-file target="Properties/WMAppManifest.xml" parent="/Deployment/App/Capabilities">
 			<Capability Name="ID_CAP_NETWORKING" />
 			<Capability Name="ID_CAP_PUSH_NOTIFICATION" />
-		</config-file>		
+		</config-file>
 		<framework src="src/wp8/lib/Parse.Phone.dll" custom="true" />
 		<framework src="src/wp8/lib/Parse.dll" custom="true" />
 		<source-file src="src/wp8/ParsePlugin.cs"/>
